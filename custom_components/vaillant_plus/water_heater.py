@@ -1,4 +1,4 @@
-"""The Vaillant Plus climate platform."""
+"""The Vaillant Plus water heater platform."""
 from __future__ import annotations
 
 import logging
@@ -80,6 +80,18 @@ class VaillantWaterHeater(VaillantEntity, WaterHeaterEntity):
     def __init__(self, client):
         self._client = client  # 保存 client 参数
         self._cache = {}  # 初始化缓存字典
+    
+    def _dhw_enabled_value(self) -> Any:
+        """Return the current DHW enable value from known API variants."""
+        for attr in (
+            "WarmStar_Tank_Loading_Enable",
+            "Enabled_DHW",
+            "DHW_switch",
+        ):
+            value = self.get_device_attr(attr)
+            if value is not None:
+                return value
+        return None
 
     @property
     def should_poll(self) -> bool:
@@ -116,7 +128,11 @@ class VaillantWaterHeater(VaillantEntity, WaterHeaterEntity):
         value = self._get_cached_value("WarmStar_Tank_Loading_Enable")
         if value is None:
             return None
-        return WATER_HEATER_ON if value == 1 else WATER_HEATER_OFF
+        if value is None:
+            return None
+        if value in (1, True, "1", "true", "True", "on"):
+            return WATER_HEATER_ON
+        return WATER_HEATER_OFF
 
     @property
     def operation_list(self) -> list[str] | None:
@@ -128,10 +144,18 @@ class VaillantWaterHeater(VaillantEntity, WaterHeaterEntity):
         """Return the current dhw temperature."""
         return self._get_cached_value("DHW_setpoint")
 
+    def _dhw_target_temperature_value(self) -> Any:
+        """Return the current target DHW temperature from known API variants."""
+        for attr in ("DHW_setpoint", "Current_DHW_Setpoint", "DHW_readSetPoint"):
+            value = self.get_device_attr(attr)
+            if value is not None:
+                return value
+        return None
+
     @property
     def target_temperature(self) -> float:
         """Return the targeted dhw temperature. Current_DHW_Setpoint or DHW_setpoint"""
-        return self._get_cached_value("DHW_setpoint")
+        return self._dhw_target_temperature_value()
 
     @property
     def target_temperature_high(self) -> float | None:

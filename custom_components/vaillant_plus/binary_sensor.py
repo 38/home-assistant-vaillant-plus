@@ -37,7 +37,13 @@ class VaillantBinarySensorDescription(
 
 
 BINARY_SENSOR_DESCRIPTIONS = (
-    
+    VaillantBinarySensorDescription(
+        key="Circulation_Enable",
+        name="循环泵状态",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        on_state=1,
+    ), 
     VaillantBinarySensorDescription(
         key="Heating_Enable",
         name="暖气开启状态",
@@ -54,7 +60,7 @@ BINARY_SENSOR_DESCRIPTIONS = (
     ),
     VaillantBinarySensorDescription(
         key="Enabled_DHW",
-        name="Domestic hot water",
+        name="",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
         on_state=1,
@@ -155,16 +161,22 @@ class VaillantBinarySensorEntity(VaillantEntity, BinarySensorEntity):
     @callback
     def update_from_latest_data(self, data: dict[str, Any]) -> None:
         """Update the entity from the latest data."""
-        # self._attr_available = data[self.entity_description.key] is not None
+        if self.entity_description.key not in data:
+            return
+        value: Any = data.get(self.entity_description.key)
+        self._attr_available = value is not None
+        if value is None:
+            return
+
+        if self.entity_description.key == "RF_Status":
+            self._attr_is_on = value == 3
+        elif self.entity_description.key == "Boiler_info3_bit0":
+            self._attr_is_on = str(value).startswith("1")
+        elif self.entity_description.key == "Boiler_info5_bit4":
+            self._attr_is_on = str(value).startswith("1")
+        elif self.entity_description.on_state is not None:
+            self._attr_is_on = value == self.entity_description.on_state
+        else:
+            self._attr_is_on = value is True
         
-        if self.entity_description.key in data:
-            self._attr_available = data[self.entity_description.key] is not None
-            value: Any = data.get(self.entity_description.key)
-            if self.entity_description.key == "Boiler_info5_bit4":
-                self._attr_is_on = value == 1
-            elif self.entity_description.on_state is not None:
-                self._attr_is_on = value == self.entity_description.on_state
-            else:
-                self._attr_is_on = value is True
-            
-            self.async_schedule_update_ha_state(True)
+        self.async_schedule_update_ha_state(True)

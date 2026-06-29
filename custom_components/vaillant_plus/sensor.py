@@ -11,8 +11,10 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from homeassistant.const import (
@@ -35,10 +37,47 @@ SENSOR_DESCRIPTIONS = (
         state_class=SensorStateClass.MEASUREMENT,
       native_unit_of_measurement="bar",
     ),
+    SensorEntityDescription(
+        key="Room_Temperature_Setpoint_Comfort",
+        name="舒适模式温度",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+      native_unit_of_measurement="bar",
+    ),
+    SensorEntityDescription(
+        key="Room_Temperature_Setpoint_ECO",
+        name="经济模式温度",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key="Room_Temperature",
+        name="房间温度",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key="DHW_readSetPoint",
+        name="Domestic hot water read setpoint",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key="Current_DHW_Setpoint",
+        name="当前热水温度",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
 	SensorEntityDescription(
         key="indoor_temperature",
         name="室内温度",
         device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
       native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     ),
@@ -46,6 +85,7 @@ SENSOR_DESCRIPTIONS = (
         key="Tank_temperature",
         name="水箱温度",
         device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
       native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     ),
@@ -125,6 +165,175 @@ SENSOR_DESCRIPTIONS = (
         key="burn_status",
         name="燃烧器状态",
     ),
+    SensorEntityDescription(
+        key="gas_ch_consumption_today",
+        name="今日燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_ch_consumption_yesterday",
+        name="昨日燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_ch_consumption_monthly",
+        name="月度燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_ch_consumption_yearly",
+        name="年度燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_dhw_consumption_today",
+        name="今日热水燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_dhw_consumption_yesterday",
+        name="昨日热水燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_dhw_consumption_monthly",
+        name="月度热水燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_dhw_consumption_yearly",
+        name="年度热水燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="gas_consumption",
+        name="总燃气消耗",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="CH_workTime",
+        name="壁挂炉工作时间",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="CH_startTimes",
+        name="壁挂炉开启次数",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="DHW_workTime",
+        name="热水器工作时间",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="DHW_startTimes",
+        name="热水器工作次数",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="CH_power",
+        name="壁挂炉功率",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="DHW_power",
+        name="热水器功率",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Heating_Curve",
+        name="加热曲线",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="pump_status",
+        name="水泵状态",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="fan_status",
+        name="风扇状态",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="fan_speed",
+        name="风扇速度",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="ebus_status",
+        name="eBUS状态",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="modbus_status",
+        name="Modbus状态",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="WiFi_RSSI",
+        name="Wi-Fi RSSI",
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        native_unit_of_measurement="dBm",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="maintainence_remainTime",
+        name="下次保养时间",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Fault_List_1",
+        name="Fault list 1",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Fault_List_2",
+        name="Fault list 2",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Fault_List_3",
+        name="Fault list 3",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Fault_List_4",
+        name="Fault list 4",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Fault_List_5",
+        name="Fault list 5",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Gateway_Fault_List_1",
+        name="Gateway fault list 1",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Gateway_Fault_List_2",
+        name="Gateway fault list 2",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Gateway_Fault_List_3",
+        name="Gateway fault list 3",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Gateway_Fault_List_4",
+        name="Gateway fault list 4",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="Gateway_Fault_List_5",
+        name="Gateway fault list 5",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 
@@ -182,6 +391,8 @@ class VaillantSensorEntity(VaillantEntity, SensorEntity):
     @callback
     def update_from_latest_data(self, data: dict[str, Any]) -> None:
         """Update the entity from the latest data."""
+        if self.entity_description.key not in data:
+            return
 
         if(self.entity_description.key in data):
           value = data.get(self.entity_description.key)

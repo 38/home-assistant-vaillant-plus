@@ -1,5 +1,4 @@
 """Vaillant vSMART entity classes."""
-from datetime import timedelta
 import logging
 from typing import Any
 
@@ -12,7 +11,6 @@ from .client import VaillantClient
 from .const import DOMAIN, EVT_DEVICE_UPDATED
 
 UPDATE_INTERVAL = timedelta(seconds=30)
-
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
@@ -34,10 +32,8 @@ class VaillantEntity(Entity):
     def device(self) -> Device:
         return self._client.device
 
-    def get_device_attr(self, attr) -> Any:
-        if self._client.device_attrs.get(attr) is not None:
-            return self._client.device_attrs.get(attr)
-        return None
+    def get_device_attr(self, attr: str) -> Any:
+        return self._client.device_attrs.get(attr)
         
     def set_device_attr(self, attr, value):
         """
@@ -48,7 +44,6 @@ class VaillantEntity(Entity):
             self._client.device_attrs[attr] = value  # 动态添加属性
         else:
             self._client.device_attrs[attr] = value  # 更新属性值
-
         self.update_from_latest_data(self._client.device_attrs.copy())
         self.async_write_ha_state()
             
@@ -60,6 +55,7 @@ class VaillantEntity(Entity):
             """Update the state."""
             _LOGGER.debug("write ha state: %s", data)
             self.update_from_latest_data(data)
+            self.async_schedule_update_ha_state()
 
         self.async_on_remove(
             async_dispatcher_connect(
@@ -73,6 +69,11 @@ class VaillantEntity(Entity):
     @property
     def should_poll(self) -> bool:
         return False
+
+    @property
+    def available(self) -> bool:
+        """Return True if the entity has device data from an active connection."""
+        return self._client.is_connected and len(self.device_attrs) > 0
 
     @property
     def device_info(self) -> DeviceInfo:
