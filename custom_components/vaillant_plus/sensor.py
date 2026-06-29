@@ -43,7 +43,6 @@ SENSOR_DESCRIPTIONS = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-      native_unit_of_measurement="bar",
     ),
     SensorEntityDescription(
         key="Room_Temperature_Setpoint_ECO",
