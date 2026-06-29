@@ -50,7 +50,6 @@ async def async_setup_entry(
     @callback
     def async_new_climate(device_attrs: dict[str, Any]):
         _LOGGER.debug("New climate found device_attrs == %s",device_attrs)
-
         if "climate" not in added_entities:
             if device_attrs.get("Enabled_Heating") is not None or device_attrs.get("Heating_Enable") is not None:
                 new_devices = [VaillantClimate(client)]
@@ -67,6 +66,7 @@ async def async_setup_entry(
         unsub = async_dispatcher_connect(
             hass, signal.format(device_id), async_new_climate
         )
+
         hass.data[DOMAIN][DISPATCHERS][device_id].append(unsub)
 
     return True
@@ -274,7 +274,7 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         """Update the climate entity from the latest data."""
         # 更新缓存中的关键属性，确保控制参数能及时反映外部变更
         if "Heating_Enable" in data:
-            enable = data["Heating_Enable"] or data["Enable_Heating"]
+            enable = data.get("Heating_Enable", False) or data.get("Enabled_Heating", False)
             if enable == 1:
                 self._cache["hvac_mode"] = HVACMode.HEAT
                 self._cache["hvac_action"] = HVACAction.HEATING
@@ -292,3 +292,4 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
             self._cache["Upper_Limitation_of_CH_Setpoint"] = data["Upper_Limitation_of_CH_Setpoint"]
         
         self.async_write_ha_state()
+
