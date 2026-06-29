@@ -41,6 +41,7 @@ class VaillantClient:
 
         self._websocket_client: VaillantWebsocketClient | None = None
 
+        self._failed_attempts: int = 0
         self._sleep_task: asyncio.Task | None = None
 
         self._state = "INITED"

@@ -60,7 +60,7 @@ BINARY_SENSOR_DESCRIPTIONS = (
     ),
     VaillantBinarySensorDescription(
         key="Enabled_DHW",
-        name="",
+        name="Domestic hot water",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
         on_state=1,
