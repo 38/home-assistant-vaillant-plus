@@ -10,6 +10,7 @@ from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACAction,
     HVACMode,
+    ATTR_HVAC_MODE,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
@@ -198,6 +199,9 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Update target room temperature value."""
+
+        if ATTR_HVAC_MODE in kwargs:
+            await self.async_set_hvac_mode(kwargs.get(ATTR_HVAC_MODE))
 
         new_temperature = kwargs.get(ATTR_TEMPERATURE)
         if new_temperature is None:
