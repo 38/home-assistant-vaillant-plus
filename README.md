@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # home-assistant-vaillant-plus
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -74,6 +75,8 @@ Component built with integration_blueprint.
 [download-all]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/total?style=flat-square
 [download-latest]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/latest/total?style=flat-square
 =======
+=======
+>>>>>>> v1.4.0
 # home-assistant-vaillant-plus
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -149,5 +152,9 @@ Component built with integration_blueprint.
 [releases]: https://github.com/daxingplay/home-assistant-vaillant-plus/releases
 [user_profile]: https://github.com/daxingplay
 [download-all]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/total?style=flat-square
+<<<<<<< HEAD
+[download-latest]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/latest/total?style=flat-square
+>>>>>>> v1.4.0
+=======
 [download-latest]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/latest/total?style=flat-square
 >>>>>>> v1.4.0

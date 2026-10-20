@@ -232,11 +232,13 @@ SENSOR_DESCRIPTIONS = (
     ),
     SensorEntityDescription(
         key="gas_ch_consumption_today",
+        name="Central heating gas consumption today raw",
         translation_key="gas_ch_consumption_today",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SensorEntityDescription(
         key="gas_ch_consumption_yesterday",
+        name="Central heating gas consumption yesterday raw",
         translation_key="gas_ch_consumption_yesterday",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),

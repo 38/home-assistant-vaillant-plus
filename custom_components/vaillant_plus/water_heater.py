@@ -204,6 +204,18 @@ class VaillantWaterHeater(VaillantEntity, WaterHeaterEntity):
         """Turn the water heater off."""
         await self._async_set_dhw_enabled(False)
 
+    async def async_set_operation_mode(self, operation_mode: str) -> None:
+        """Set new target operation mode."""
+        await self._async_set_dhw_enabled(operation_mode != WATER_HEATER_OFF)
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the water heater on."""
+        await self._async_set_dhw_enabled(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the water heater off."""
+        await self._async_set_dhw_enabled(False)
+
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""

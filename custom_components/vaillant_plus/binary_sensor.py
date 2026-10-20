@@ -39,21 +39,23 @@ class VaillantBinarySensorDescription(
 BINARY_SENSOR_DESCRIPTIONS = (
     VaillantBinarySensorDescription(
         key="Circulation_Enable",
-        name="循环泵状态",
+        name="Circulation",
+        translation_key="circulation_enable",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
         on_state=1,
     ), 
     VaillantBinarySensorDescription(
         key="Heating_Enable",
-        name="暖气开启状态",
+        name="Heating",
+        translation_key="heating_enable",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
         on_state=1,
     ),
     VaillantBinarySensorDescription(
         key="WarmStar_Tank_Loading_Enable",
-        name="生活热水状态",
+        name="WarmStar tank loading",
         translation_key="warmstar_tank_loading_enable",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -130,7 +132,8 @@ BINARY_SENSOR_DESCRIPTIONS = (
     ),
     VaillantBinarySensorDescription(
         key="Boiler_info5_bit4",
-        name="水箱是否缺水",
+        name="Boiler need refill water",
+        translation_key="boiler_info5_bit4",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
         on_state=True,

@@ -82,6 +82,9 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
     # The main feature of the device: it carries the device name itself.
     _attr_has_entity_name = True
 
+    # The main feature of the device: it carries the device name itself.
+    _attr_has_entity_name = True
+
     def _heating_enabled_value(self) -> Any:
         """Return the current heating enable value from known API variants."""
         for attr in HEATING_ENABLE_ATTRS:
@@ -203,6 +206,14 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
                 self._cache["hvac_action"] = HVACAction.HEATING
         except Exception as e:
             _LOGGER.error("Failed to set HVAC mode: %s", e)
+
+    async def async_turn_on(self) -> None:
+        """Turn the central heating on."""
+        await self.async_set_hvac_mode(HVACMode.HEAT)
+
+    async def async_turn_off(self) -> None:
+        """Turn the central heating off."""
+        await self.async_set_hvac_mode(HVACMode.OFF)
 
     async def async_turn_on(self) -> None:
         """Turn the central heating on."""
