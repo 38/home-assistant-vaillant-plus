@@ -4,8 +4,10 @@ import logging
 from typing import Any
 
 from homeassistant.core import callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity import Entity, DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
 from vaillant_plus_cn_api import Device
 
 from .client import VaillantClient
@@ -74,7 +76,11 @@ class VaillantEntity(Entity):
     @property
     def available(self) -> bool:
         """Return True if the entity has device data from an active connection."""
-        return self._client.is_connected and len(self.device_attrs) > 0
+        if not self._client.is_connected or len(self.device_attrs) == 0:
+            return False
+        # Platforms mark themselves unavailable when their own attribute is
+        # missing from the payload; `_attr_available` defaults to True.
+        return self._attr_available
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -95,8 +101,35 @@ class VaillantEntity(Entity):
         # _LOGGER.warning("VaillantEntity update_from_latest_data %s",data)
         # self.async_schedule_update_ha_state()
 
+    @callback
+    def set_optimistic_value(self, attr: str, value: Any) -> None:
+        """Apply a value locally without waiting for the device to echo it.
+
+        The cloud can take several seconds to report a change back over the
+        websocket; until then the UI would snap back to the old value.
+        """
+        self._client.device_attrs[attr] = value
+        self.update_from_latest_data({attr: value})
+        if self.hass is not None:
+            self.async_write_ha_state()
+
     async def send_command(self, attr: str, value: Any) -> None:
-        """Send operations to cloud."""
-        await self._client.control_device({
-            f"{attr}": value
-        })
+        """Send one attribute to the cloud and apply it locally."""
+        await self.send_commands({attr: value})
+
+    async def send_commands(self, attrs: dict[str, Any]) -> None:
+        """Send attributes to the cloud and apply them locally.
+
+        `control_device` returns False once it has exhausted its retries, which
+        means the command never reached the cloud and nothing will re-send it.
+        Raise, so the failure reaches the user instead of looking like a
+        successful command, and do not apply the values locally: the device
+        still holds its old state.
+        """
+        if not await self._client.control_device(attrs):
+            raise HomeAssistantError(
+                f"Failed to send {list(attrs)} to the Vaillant cloud"
+            )
+
+        for attr, value in attrs.items():
+            self.set_optimistic_value(attr, value)

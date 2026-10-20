@@ -15,11 +15,11 @@ from homeassistant.components.climate.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .client import VaillantClient
-from .const import CONF_DID, DISPATCHERS, DOMAIN, EVT_DEVICE_CONNECTED, EVT_DEVICE_UPDATED, API_CLIENT
+from .const import CONF_DID, DOMAIN, API_CLIENT
+from .discovery import MissingAttributeWarning, async_register_discovery
 from .entity import VaillantEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,10 +30,15 @@ PRESET_SUMMER = "Summer"
 PRESET_WINTER = "Winter"
 
 SUPPORTED_FEATURES = (
-    ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF
+    ClimateEntityFeature.TARGET_TEMPERATURE
+    | ClimateEntityFeature.PRESET_MODE
+    | ClimateEntityFeature.TURN_ON
+    | ClimateEntityFeature.TURN_OFF
 )
 SUPPORTED_HVAC_MODES = [HVACMode.HEAT, HVACMode.OFF]
 SUPPORTED_PRESET_MODES = [PRESET_COMFORT]
+
+HEATING_ENABLE_ATTRS = ("Enabled_Heating", "Heating_Enable")
 
 
 async def async_setup_entry(
@@ -47,29 +52,23 @@ async def async_setup_entry(
     ]
 
     added_entities = []
+    missing_attribute_warning = MissingAttributeWarning(_LOGGER, "Climate")
 
     @callback
     def async_new_climate(device_attrs: dict[str, Any]):
-        _LOGGER.debug("New climate found device_attrs == %s",device_attrs)
-        if "climate" not in added_entities:
-            if device_attrs.get("Enabled_Heating") is not None or device_attrs.get("Heating_Enable") is not None:
-                new_devices = [VaillantClimate(client)]
-                async_add_devices(new_devices)
-                added_entities.append("climate")
-            else:
-                _LOGGER.warning(
-                    "Missing required attribute to setup Vaillant Climate. skip."
-                )
-        else:
+        if "climate" in added_entities:
             _LOGGER.debug("Already added climate device. skip.")
+            return
+        
+        if all(device_attrs.get(attr) is None for attr in HEATING_ENABLE_ATTRS):
+            missing_attribute_warning.report(HEATING_ENABLE_ATTRS, device_attrs)
+            return
 
-    for signal in (EVT_DEVICE_CONNECTED, EVT_DEVICE_UPDATED):
-        unsub = async_dispatcher_connect(
-            hass, signal.format(device_id), async_new_climate
-        )
+        _LOGGER.debug("New climate found")
+        added_entities.append("climate")
+        async_add_devices([VaillantClimate(client)])
 
-        hass.data[DOMAIN][DISPATCHERS][device_id].append(unsub)
-
+    async_register_discovery(hass, device_id, client, async_new_climate)
     return True
 
 
@@ -79,6 +78,17 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
     def __init__(self, client):
         self._client = client  # 保存 client 参数
         self._cache = {}  # 初始化缓存字典
+
+    # The main feature of the device: it carries the device name itself.
+    _attr_has_entity_name = True
+
+    def _heating_enabled_value(self) -> Any:
+        """Return the current heating enable value from known API variants."""
+        for attr in HEATING_ENABLE_ATTRS:
+            value = self.get_device_attr(attr)
+            if value is not None:
+                return value
+        return None
 
     @property
     def should_poll(self) -> bool:
@@ -144,6 +154,10 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         Return the currently running HVAC action.
         If Heating_Enable is not available, return the last known value.
         """
+
+        if self._heating_enabled_value() in (0, False):
+            return HVACAction.OFF
+
         try:
             enable = self._get_cached_value("Heating_Enable",False)
             _LOGGER.debug("enable===%s",enable)
@@ -190,6 +204,14 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         except Exception as e:
             _LOGGER.error("Failed to set HVAC mode: %s", e)
 
+    async def async_turn_on(self) -> None:
+        """Turn the central heating on."""
+        await self.async_set_hvac_mode(HVACMode.HEAT)
+
+    async def async_turn_off(self) -> None:
+        """Turn the central heating off."""
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Select new HVAC preset mode."""
 
@@ -209,7 +231,7 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
 
         _LOGGER.debug("Setting target temperature to: %s", new_temperature)
 
-        await self._client.control_device({
+        await self.send_commands({
             "Flow_Temperature_Setpoint": new_temperature,
         })
        
