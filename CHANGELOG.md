@@ -1,6 +1,9 @@
 # Changelog
 
 <!--next-version-placeholder-->
+## Unreleased
+* Diagnostics now report the fields that identify a device's product family (`platform`, `product_id`, `sub_product_key`), so a report about an unsupported device can be acted on without asking for a second round of information. Per-unit identifiers such as the serial number stay out of the dump, as before.
+
 ## v1.4.0 (2026-08-30)
 * **This release requires Home Assistant 2024.2 or later.** Older installations keep working on v1.3.0 and HACS will not offer them the update. Dropping them removes the compatibility shims the integration carried for releases from 2022.11 on, and is what allows entity names to be translated at all.
 * Entity names are now translatable. Every sensor and binary sensor carries a `translation_key`, and Chinese names are provided for all of them, so the entities show as 供水温度 / 水箱温度 / 暖气开启状态 rather than English. Languages without a translation keep the English names. Chinese wording follows [@elwinchen1986](https://github.com/elwinchen1986)'s fork where it had a name for an attribute.
@@ -8,6 +11,7 @@
   * **Entity ids do not change**, so automations, scripts and dashboards keep working. Only the displayed names do.
   * Anything that keys on the *name* rather than the entity id — an automatically titled dashboard card, a voice assistant phrase, a template matching `friendly_name` — will see the new name.
   * New installations get device-prefixed entity ids (`sensor.wei_jing_ling_flow_temperature`); existing installations keep the ids they already have.
+* **Upgrading from v1.2.4 or earlier: temperature statistics need a one-time fix.** After the restart, Home Assistant logs `The unit of sensor.… (°C) cannot be converted to the unit of previously compiled statistics (None)` once per temperature sensor and stops generating long term statistics for them. v1.2.5 added the `°C` that those sensors were missing, and the recorder will not mix unitless history with `°C` history. Open [Developer tools -> Statistics](https://my.home-assistant.io/redirect/developer_statistics/), pick each listed sensor and update the unit of the historical statistics to `°C` — the old readings were already Celsius, only unlabelled, so nothing is lost. Current values and short term history were never affected. See [Troubleshooting](README.md#troubleshooting).
 
 ## v1.3.0 (2026-08-30)
 * Support `climate.turn_on` / `climate.turn_off`, so scripts and device actions can switch the central heating on and off. Home Assistant 2024.2 and later only accept these on entities that advertise the feature, the same gap [#34](https://github.com/daxingplay/home-assistant-vaillant-plus/issues/34) hit on the water heater.

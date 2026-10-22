@@ -12,6 +12,7 @@
 
 [![Community Forum][forum-shield]][forum]
 
+<<<<<<< HEAD
 原作者地址 https://github.com/daxingplay/home-assistant-vaillant-plus
 
 由于作者版本不支持威能网关设备，在之前的基础上增加威能网关设备支持
@@ -73,8 +74,6 @@ Component built with integration_blueprint.
 [download-all]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/total?style=flat-square
 [download-latest]: https://img.shields.io/github/downloads/daxingplay/home-assistant-vaillant-plus/latest/total?style=flat-square
 =======
-=======
->>>>>>> v1.4.0
 # home-assistant-vaillant-plus
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -88,6 +87,8 @@ Component built with integration_blueprint.
 [![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 [![Community Forum][forum-shield]][forum]
+=======
+English | [简体中文](README.zh-CN.md)
 
 Home Assistant custom component for controlling vSmart in Vaillant+ cn app.
 
@@ -123,6 +124,33 @@ Copy `custom_components/vaillant_plus` into your Home Assistant `config` directo
 - Enter your username and password for the Vaillant+ App
 - If login successfully, select the proper Vaillant vSmart device from the list
 - All done
+
+## Troubleshooting
+
+### `The unit of sensor.… (°C) cannot be converted to the unit of previously compiled statistics (None)`
+
+Seen once per temperature sensor after upgrading from v1.2.4 or earlier, for example:
+
+```
+The unit of sensor.flow_temperature (°C) cannot be converted to the unit of
+previously compiled statistics (None). Generation of long term statistics will
+be suppressed unless the unit changes back to None or a compatible unit.
+```
+
+Before v1.2.5 the temperature sensors declared a temperature device class but no
+unit, so Home Assistant recorded their long term statistics with no unit at all.
+v1.2.5 added the missing `°C`, and the recorder will not mix the two, so it stops
+generating long term statistics for those sensors until you tell it what the old
+data was in. Current values and short term history are not affected.
+
+Fix it once in Home Assistant, no reinstall needed:
+
+1. Go to [Developer tools -> Statistics](https://my.home-assistant.io/redirect/developer_statistics/), or follow the link in the log message.
+2. Find each of the listed `sensor.*` entities and click the issue next to it.
+3. Choose the option that updates the unit of the historical statistics to `°C`. The old readings were already Celsius, only unlabelled, so this keeps your history. Deleting the statistics also clears the warning, at the cost of the old data.
+
+Long term statistics resume on the next recorder cycle and the warning does not
+come back.
 
 ## Contributions are welcome!
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
